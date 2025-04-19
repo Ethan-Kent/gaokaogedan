@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>胜利一中高考歌单</title>
+    <link rel="icon" href="/favicon/icon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png">
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootswatch/5.3.0/darkly/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        .cover-img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .countdown {
+            position: fixed;
+            top: 33px;
+            right: 20px;
+            font-size: 0.9em;
+            opacity: 0.9;
+            background-color: #fff !important;
+            color: #6F231D !important;
+        }
+
+        .song-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        footer {
+            background: #6F231D;
+            color: #ccc;
+            padding: 1rem;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: left; 
+        }
+
+        .play-btn {
+            cursor: pointer;
+            transition: color 0.3s;
+            color: #ccc !important;
+        }
+
+        .play-btn:hover {
+            color: #ccc !important;
+        }
+
+        .timeline {
+            width: 100%;
+            height: 5px;
+            background-color: #ccc !important;
+            margin-top: 10px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: #6F231D !important;
+            width: 0%;
+        }
+
+        .logo {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            width: 60px;
+            height: 60px;
+        }
+
+        #songList {
+            margin-top: 45px; 
+        }
+    </style>
+</head>
+
+<body class="container py-5">
+
+    <img src="img/logo.webp" class="logo" alt="logo">
+
+    <div class="countdown badge bg-primary" id="countdown">加载中...</div>
+
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-8 text-center">
+            <!--
+                <h1 class="mb-3">2025高考歌单</h1>
+            <h4 class="text-muted">东营市胜利第一中学</h4>
+            -->
+        </div>
+    </div>
+
+    <div class="row" id="songList">
+    </div>
+
+    <footer class="text-center">
+        <a href="/tougao" class="text-decoration-none text-primary" style="color: #ccc !important;">
+            <i class="fas fa-edit me-2"></i>我要投稿
+        </a>
+    </footer>
+
+    <script>
+        const songs = [
+            {
+                title: "同行的我们",
+                artist: "毛不易",
+                submitter: "🍊",
+                cover: "img/2025041901.webp",
+                file: "music/2025041901.m4a"
+            },
+            {
+                title: "同行的我们",
+                artist: "毛不易",
+                submitter: "🍊",
+                cover: "img/2025041901.webp",
+                file: "music/2025041901.m4a"
+            }
+        ];
+
+        function initSongList() {
+            const container = document.getElementById('songList');
+            let currentAudio = null;
+
+            songs.forEach((song, index) => {
+                const card = document.createElement('div');
+                card.className = 'col-md-6 mb-4';
+                card.innerHTML = `
+                    <div class="song-card p-3">
+                        <div class="row align-items-center">
+                            <div class="col-3">
+                                <img src="${song.cover}" class="img-fluid rounded">
+                            </div>
+                            <div class="col-7">
+                                <h5 style="color: #ccc;">${song.title} - ${song.artist}</h5>
+                                <p class="text-muted mb-0">投稿：${song.submitter}</p>
+                            </div>
+                            <div class="col-2 text-end">
+                                <i class="play-btn fas fa-play fa-2x text-success" data-index="${index}"></i>
+                            </div>
+                        </div>
+                        <div class="timeline">
+                            <div class="progress"></div>
+                        </div>
+                    </div>
+                `;
+
+                const playBtn = card.querySelector('.play-btn');
+                const timeline = card.querySelector('.timeline');
+                const progress = card.querySelector('.progress');
+
+                playBtn.addEventListener('click', () => {
+                    const audio = new Audio(song.file);
+
+                    if (currentAudio && !currentAudio.paused) {
+                        currentAudio.pause();
+                        document.querySelectorAll('.fa-play').forEach(icon => {
+                            icon.classList.remove('fa-pause');
+                            icon.classList.add('fa-play');
+                        });
+                    }
+
+                    if (playBtn.classList.contains('fa-play')) {
+                        currentAudio = audio;
+                        audio.play();
+                        playBtn.classList.remove('fa-play');
+                        playBtn.classList.add('fa-pause');
+
+                        audio.addEventListener('timeupdate', () => {
+                            const percent = (audio.currentTime / audio.duration) * 100;
+                            progress.style.width = percent + '%';
+                        });
+                    } else {
+                        currentAudio = null;
+                        playBtn.classList.remove('fa-pause');
+                        playBtn.classList.add('fa-play');
+                    }
+
+                    audio.addEventListener('ended', () => {
+                        playBtn.classList.remove('fa-pause');
+                        playBtn.classList.add('fa-play');
+                    });
+                });
+
+                timeline.addEventListener('click', (e) => {
+                    if (currentAudio) {
+                        const rect = timeline.getBoundingClientRect();
+                        const clickX = e.clientX - rect.left;
+                        const percent = (clickX / rect.width);
+                        currentAudio.currentTime = currentAudio.duration * percent;
+                    }
+                });
+
+                container.appendChild(card);
+            });
+        }
+
+        function updateCountdown() {
+            const targetDate = new Date(2025, 5, 7); // 月份从0开始
+            const now = new Date();
+            let diff = targetDate - now;
+
+            if (diff < 0) {
+                document.getElementById('countdown').textContent = '距离 2025 高考还有 0 天';
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
+            document.getElementById('countdown').textContent = `距离 2025 高考还有 ${days} 天`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initSongList();
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        });
+    </script>
+
+</body>
+</html>
